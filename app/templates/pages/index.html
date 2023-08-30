@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en" class="h-100">
+  <head>
+    {{ template "BaseHead.html" .}}
+    <title>{{.title}} - Gin Web App</title>
+  </head>
+
+  <body class="d-flex flex-column h-100">
+    {{ template "BaseMain.html" .}}
+
+    {{define "main"}}
+      <h1 class="title">{{.title}}</h1>
+
+      <ul id="car-list">
+        <li>T-Cross Highline</li>
+        <li>Logan</li>
+      </ul>
+
+      <form hx-post="/add-car" hx-target="#car-list" hx-swap="beforeend">
+        <input type="text" name="car" id="car">
+        <button type="submit">Submit</button>
+      </form>
+      <!-- <button hx-post="/add-car" hx-target="#car-list" hx-swap="beforeend">Add Car</button> -->
+    {{end}}
+
+    {{ template "BaseScript.html" .}}
+  </body>
+</html>

@@ -7,11 +7,13 @@ import (
 )
 
 func (h *Handler) Home(c *gin.Context) {
-	c.HTML(http.StatusOK, "home_index.html", gin.H{
+	c.HTML(http.StatusOK, "index.html", gin.H{
 		"title": "Gin Web App",
 	})
 }
 
 func (h *Handler) AddCar(c *gin.Context) {
-	c.HTML(http.StatusOK, "add_car.html", gin.H{"name": "Prisma"})
+	carName := c.PostForm("car")
+
+	c.HTML(http.StatusOK, "add_car.html", gin.H{"name": carName})
 }

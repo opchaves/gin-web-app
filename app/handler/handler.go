@@ -31,8 +31,6 @@ func NewHandler(c *Config) {
 		})
 	})
 
-	c.R.Static("/assets", "./assets")
-
 	// Home page
 	c.R.GET("/", h.Home)
 	c.R.POST("/add-car", h.AddCar)

@@ -7,11 +7,9 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"path/filepath"
 	"syscall"
 	"time"
 
-	"github.com/gin-contrib/multitemplate"
 	"github.com/gin-gonic/contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
@@ -41,9 +39,9 @@ func main() {
 	// corsConfig.AllowedOrigins = []string{cfg.CorsOrigin}
 
 	router := gin.Default()
-	// router.LoadHTMLGlob("app/templates/**/*")
-	router.HTMLRender = loadTemplates("./app/templates")
 	router.Use(cors.New(corsConfig))
+	router.LoadHTMLGlob("app/templates/**/*")
+	router.Static("/assets", "./assets")
 
 	handler.NewHandler(&handler.Config{
 		R:               router,
@@ -83,27 +81,4 @@ func main() {
 	if err = srv.Shutdown(ctx); err != nil {
 		log.Fatalf("Server forced to shutdown: %v\n", err)
 	}
-}
-
-func loadTemplates(templatesDir string) multitemplate.Renderer {
-	r := multitemplate.NewRenderer()
-
-	layouts, err := filepath.Glob(templatesDir + "/layouts/*.html")
-	if err != nil {
-		panic(err.Error())
-	}
-
-	includes, err := filepath.Glob(templatesDir + "/views/**/*.html")
-	if err != nil {
-		panic(err.Error())
-	}
-
-	// Generate our templates map from our layouts/ and includes/ directories
-	for _, include := range includes {
-		layoutCopy := make([]string, len(layouts))
-		copy(layoutCopy, layouts)
-		files := append(layoutCopy, include)
-		r.AddFromFiles(filepath.Base(include), files...)
-	}
-	return r
 }
