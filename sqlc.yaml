@@ -1,0 +1,14 @@
+version: "2"
+sql:
+  - engine: "postgresql"
+    schema: "./db/migrations"
+    queries: "./internal/model/sql"
+    database:
+      uri: ${DATABASE_URL}
+    gen:
+      go:
+        package: "model"
+        out: "./app/model"
+        sql_package: "pgx/v5"
+        emit_result_struct_pointers: true
+        emit_json_tags: true
