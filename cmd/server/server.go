@@ -1,8 +1,8 @@
-package main
+package server
 
 import (
 	"context"
-	"log"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"os"
@@ -12,28 +12,22 @@ import (
 
 	"github.com/gin-gonic/contrib/cors"
 	"github.com/gin-gonic/gin"
-	"github.com/joho/godotenv"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/opchaves/gin-web-app/app/config"
-	"github.com/opchaves/gin-web-app/app/handler"
 )
 
-func main() {
-	slog.Debug("Starting server...")
+// Config will hold services that will eventually be injected into this
+// handler layer on handler initialization
+type Config struct {
+	Db              *pgxpool.Pool
+	Cfg             *config.Config
+	Ctx             context.Context
+	Logger          *slog.Logger
+	TimeoutDuration time.Duration
+	MaxBodyBytes    int64
+}
 
-	if gin.Mode() != gin.ReleaseMode {
-		err := godotenv.Load()
-		if err != nil {
-			log.Fatalln("Error loading .env file")
-		}
-	}
-
-	ctx := context.Background()
-	cfg, err := config.LoadConfig(ctx)
-
-	if err != nil {
-		log.Fatalf("Could not load the config: %v\n", err)
-	}
-
+func Start(c *Config) error {
 	corsConfig := cors.DefaultConfig()
 	// corsConfig.AllowAllOrigins = false
 	// corsConfig.AllowedOrigins = []string{cfg.CorsOrigin}
@@ -43,25 +37,22 @@ func main() {
 	router.LoadHTMLGlob("app/templates/**/*")
 	router.Static("/assets", "./assets")
 
-	handler.NewHandler(&handler.Config{
-		R:               router,
-		TimeoutDuration: time.Duration(cfg.HandlerTimeOut) * time.Second,
-		MaxBodyBytes:    cfg.MaxBodyBytes,
-	})
+	SetRoutes(c, router)
 
 	srv := &http.Server{
-		Addr:    ":" + cfg.Port,
+		Addr:    ":" + c.Cfg.Port,
 		Handler: router,
 	}
 
 	// Graceful server shutdown - https://github.com/gin-gonic/examples/blob/master/graceful-shutdown/graceful-shutdown/server.go
 	go func() {
-		if err = srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Fatalf("Failed to initialize server: %v\n", err)
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			c.Logger.Error("failed to initialize server", slog.Any("error", err))
+			os.Exit(1)
 		}
 	}()
 
-	log.Printf("Listening on port %v\n", srv.Addr)
+	c.Logger.Debug(fmt.Sprintf("Listening on port %v", srv.Addr))
 
 	// Wait for kill signal of channel
 	quit := make(chan os.Signal, 1)
@@ -77,8 +68,11 @@ func main() {
 	defer cancel()
 
 	// Shutdown server
-	log.Println("Shutting down server...")
-	if err = srv.Shutdown(ctx); err != nil {
-		log.Fatalf("Server forced to shutdown: %v\n", err)
+	c.Logger.Debug("Shutting down server...")
+	if err := srv.Shutdown(ctx); err != nil {
+		c.Logger.Debug("Server forced to shutdown", slog.Any("error", err))
+		os.Exit(1)
 	}
+
+	return nil
 }

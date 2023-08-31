@@ -1,4 +1,4 @@
-package handler
+package server
 
 import (
 	"net/http"
@@ -13,6 +13,8 @@ import (
 type Request interface {
 	validate() error
 }
+
+// TODO use go-validator. default validata for gin
 
 // bindData is helper function, returns false if data is not bound
 func bindData(c *gin.Context, req Request) bool {
