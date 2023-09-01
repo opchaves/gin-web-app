@@ -2,8 +2,10 @@ BEGIN;
 
 SET timezone TO 'GMT';
 
+-- If using Postgres 14 or newer you do not need any modifications or extra plugins and can just use gen_random_uuid()
+
 CREATE TABLE IF NOT EXISTS users(
-  "id" UUID NOT NULL,
+  "id" UUID NOT NULL DEFAULT gen_random_uuid(),
   "first_name" VARCHAR NOT NULL,
   "last_name" VARCHAR NOT NULL,
   "email" VARCHAR NOT NULL,
@@ -19,7 +21,7 @@ CREATE TABLE IF NOT EXISTS users(
 );
 
 CREATE TABLE IF NOT EXISTS workspaces(
-  "id" UUID NOT NULL,
+  "id" UUID NOT NULL DEFAULT gen_random_uuid(),
   "name" VARCHAR NOT NULL,
   "description" VARCHAR,
   "currency" VARCHAR NOT NULL,
@@ -33,7 +35,7 @@ CREATE TABLE IF NOT EXISTS workspaces(
 );
 
 CREATE TABLE IF NOT EXISTS categories(
-  "id" UUID NOT NULL,
+  "id" UUID NOT NULL DEFAULT gen_random_uuid(),
   "name" VARCHAR NOT NULL,
   "description" VARCHAR,
   "c_type" VARCHAR NOT NULL,
@@ -48,7 +50,7 @@ CREATE TABLE IF NOT EXISTS categories(
 );
 
 CREATE TABLE IF NOT EXISTS accounts(
-  "id" UUID NOT NULL,
+  "id" UUID NOT NULL DEFAULT gen_random_uuid(),
   "name" VARCHAR NOT NULL,
   "description" VARCHAR,
   "balance" NUMERIC(10,2),
@@ -65,7 +67,7 @@ CREATE TABLE IF NOT EXISTS accounts(
 );
 
 CREATE TABLE IF NOT EXISTS profiles(
-  "id" UUID NOT NULL,
+  "id" UUID NOT NULL DEFAULT gen_random_uuid(),
   "name" VARCHAR NOT NULL,
   "currency" VARCHAR NOT NULL,
   "language" VARCHAR NOT NULL,
@@ -78,7 +80,7 @@ CREATE TABLE IF NOT EXISTS profiles(
 );
 
 CREATE TABLE IF NOT EXISTS transactions(
-  "id" UUID NOT NULL,
+  "id" UUID NOT NULL DEFAULT gen_random_uuid(),
   "title" VARCHAR NOT NULL,
   "note" VARCHAR,
   "currency" VARCHAR,

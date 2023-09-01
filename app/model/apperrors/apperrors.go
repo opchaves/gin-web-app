@@ -44,6 +44,7 @@ const (
 
 // Generic Errors
 const (
+	InvalidId      = "Id given is not valid"
 	InvalidSession = "Provided session is invalid"
 	ServerError    = "Something went wrong. Try again later"
 	Unauthorized   = "Not Authorized"

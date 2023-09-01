@@ -2,9 +2,7 @@ version: "2"
 sql:
   - engine: "postgresql"
     schema: "./db/migrations"
-    queries: "./internal/model/sql"
-    database:
-      uri: ${DATABASE_URL}
+    queries: "./app/model/sql"
     gen:
       go:
         package: "model"

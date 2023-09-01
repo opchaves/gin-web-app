@@ -1,0 +1,9 @@
+{
+  "name": "gin-web-app",
+  "adapter": "postgres",
+  "host": "localhost",
+  "port": 5432,
+  "user": "root",
+  "password": "secret",
+  "database": "kom-db"
+}
