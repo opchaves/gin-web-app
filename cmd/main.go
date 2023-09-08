@@ -2,73 +2,59 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
+	"net/http"
 	"os"
-	"runtime/debug"
+	"os/signal"
+	"syscall"
 	"time"
 
-	"github.com/gin-gonic/gin"
-	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/joho/godotenv"
-	"github.com/opchaves/gin-web-app/app/config"
 	"github.com/opchaves/gin-web-app/cmd/server"
 )
 
-// Version set current code version
-var Version = "0.0.1"
-
 func main() {
-	if err := run(); err != nil {
+	config, err := server.Setup()
+
+	if err != nil {
 		slog.Error("error: ", slog.AnyValue(err))
 		os.Exit(1)
 	}
-}
 
-func run() error {
-	ctx := context.Background()
-	cfg, logger, err := initialize(ctx)
-	if err != nil {
-		logger.Error("failed to initialize", slog.AnyValue(err))
-		return err
+	srv := &http.Server{
+		Addr:    ":" + config.Cfg.Port,
+		Handler: config.Router,
 	}
 
-	logger.Debug("Connecting to database...")
-
-	db, err := pgxpool.New(ctx, cfg.DatabaseUrl)
-	if err != nil {
-		logger.Error("failed to connect to database", slog.String("error", err.Error()))
-		return err
-	}
-
-	return server.Start(&server.Config{
-		Logger:          logger,
-		Db:              db,
-		Cfg:             cfg,
-		Ctx:             ctx,
-		TimeoutDuration: time.Duration(cfg.HandlerTimeOut) * time.Second,
-		MaxBodyBytes:    cfg.MaxBodyBytes,
-	})
-}
-
-func initialize(ctx context.Context) (*config.Config, *slog.Logger, error) {
-	handler := slog.NewJSONHandler(os.Stdout, nil)
-	buildInfo, _ := debug.ReadBuildInfo()
-	logger := slog.New(handler).WithGroup("program_info")
-	loggerChild := logger.With(
-		slog.Int("pid", os.Getpid()),
-		slog.String("version", Version),
-		slog.String("go_version", buildInfo.GoVersion),
-	)
-
-	if gin.Mode() != gin.ReleaseMode {
-		err := godotenv.Load()
-		if err != nil {
-			loggerChild.Error("Error loading .env file", slog.AnyValue(err))
-			return nil, nil, err
+	// Graceful server shutdown - https://github.com/gin-gonic/examples/blob/master/graceful-shutdown/graceful-shutdown/server.go
+	go func() {
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			config.Logger.Error("failed to initialize server", slog.Any("error", err))
+			os.Exit(1)
 		}
+	}()
+
+	config.Logger.Debug(fmt.Sprintf("Listening on port %v", srv.Addr))
+
+	// Wait for kill signal of channel
+	quit := make(chan os.Signal, 1)
+
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+
+	// This blocks until a signal is passed into the quit channel
+	<-quit
+
+	// The context is used to inform the server it has 5 seconds to finish
+	// the request it is currently handling
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	// Shutdown server
+	config.Logger.Debug("Shutting down server...")
+	if err := srv.Shutdown(ctx); err != nil {
+		config.Logger.Debug("Server forced to shutdown", slog.Any("error", err))
+		os.Exit(1)
 	}
 
-	cfg, err := config.LoadConfig(ctx)
-
-	return &cfg, loggerChild, err
+	return
 }

@@ -20,9 +20,13 @@ type Handler struct {
 	UserService  service.UserService
 }
 
-func SetRoutes(c *Config, router *gin.Engine) {
+func SetRoutes(c *Config) {
 	queries := model.New(c.Db)
-	userService := service.NewUserService(&service.UserServiceConfig{Db: c.Db, Q: queries, Logger: c.Logger})
+	userService := service.NewUserService(&service.UserServiceConfig{
+		Db:     c.Db,
+		Q:      queries,
+		Logger: c.Logger,
+	})
 
 	h := &Handler{
 		Db:           c.Db,
@@ -32,16 +36,16 @@ func SetRoutes(c *Config, router *gin.Engine) {
 		UserService:  userService,
 	}
 
-	router.NoRoute(func(c *gin.Context) {
+	c.Router.NoRoute(func(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{
 			"error": "No route found. Go to docs for a list of all routes",
 		})
 	})
 
-	router.GET("/", h.GetHome)
-	router.POST("/add-car", h.PostAddCar)
+	c.Router.GET("/", h.GetHome)
+	c.Router.POST("/add-car", h.PostAddCar)
 
-	authGroup := router.Group("/auth")
+	authGroup := c.Router.Group("/auth")
 	authGroup.POST("/register", h.Register)
 }
 
