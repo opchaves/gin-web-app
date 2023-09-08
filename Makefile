@@ -88,7 +88,7 @@ migrate-create:
 	migrate create -ext sql -dir db/migrations -seq $(MIGRATION)
 
 sqlc-install:
-	go install github.com/kyleconroy/sqlc/cmd/sqlc@latest
+	go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
 
 sqlc-gen:
 	sqlc generate
