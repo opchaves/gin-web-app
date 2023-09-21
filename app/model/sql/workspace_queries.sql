@@ -9,3 +9,6 @@ INSERT INTO workspaces ("name", "description", "currency", "language", "user_id"
 
 -- name: UpdateWorkspace :exec
 UPDATE workspaces SET "name" = $2, "description" = $3, "currency" = $4, "language" = $5 WHERE id = $1;
+
+-- name: DeleteWorkspaces :exec
+DELETE FROM workspaces;

@@ -8,14 +8,15 @@ import (
 	"testing"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"github.com/opchaves/gin-web-app/app/model/fixture"
 	"github.com/opchaves/gin-web-app/app/service"
 	"github.com/stretchr/testify/assert"
 )
 
 type ApiResponse struct {
-	data service.RegisterResponse
-	code int
+	Data service.RegisterResponse `json:"data"`
+	Code int                      `json:"code"`
 }
 
 func TestMain_AccountE2E(t *testing.T) {
@@ -54,14 +55,14 @@ func TestMain_AccountE2E(t *testing.T) {
 				err := json.Unmarshal(recorder.Body.Bytes(), respBody)
 				assert.NoError(t, err)
 
-				// assert.Equal(t, authUser.FirstName, respBody.data.FirstName)
-				// assert.Equal(t, authUser.LastName, respBody.data.LastName)
-				// assert.Equal(t, authUser.Email, respBody.data.Email)
-				// assert.NotNil(t, respBody.data.ID)
-				// assert.NotNil(t, respBody.data.CreatedAt)
-				// assert.NotNil(t, respBody.data.UpdatedAt)
+				assert.Equal(t, authUser.FirstName, respBody.Data.FirstName)
+				assert.Equal(t, authUser.LastName, respBody.Data.LastName)
+				assert.Equal(t, authUser.Email, respBody.Data.Email)
+				assert.NotNil(t, respBody.Data.ID)
+				assert.NotNil(t, respBody.Data.CreatedAt)
+				assert.NotNil(t, respBody.Data.UpdatedAt)
 
-				// authUser.ID = uuid.MustParse(respBody.data.ID)
+				authUser.ID = uuid.MustParse(respBody.Data.ID)
 			},
 		},
 	}

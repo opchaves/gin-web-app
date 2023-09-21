@@ -33,6 +33,9 @@ db-create-test:
 
 db-sh:
 	docker exec -it ${DB_CONTAINER} psql -U ${DB_USER} ${DB_NAME}
+	
+db-sh-test:
+	docker exec -it ${DB_CONTAINER} psql -U ${DB_USER} ${DB_NAME}-test
 
 db-drop:
 	docker exec -it ${DB_CONTAINER} dropdb ${DB_NAME}
