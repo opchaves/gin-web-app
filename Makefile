@@ -11,6 +11,7 @@ DB_PASS := secret
 DB_NAME := kom-db
 DB_VOL := kom-data
 DB_URL=postgresql://root:secret@localhost:5432/kom-db?sslmode=disable
+DB_URL_TEST=postgresql://root:secret@localhost:5432/kom-db-test?sslmode=disable
 REDIS_PORT := 6380
 REDIS_VOL := kom-redis-data
 
@@ -27,11 +28,17 @@ data-volume:
 db-create:
 	docker exec -it ${DB_CONTAINER} createdb --username=${DB_USER} --owner=${DB_USER} ${DB_NAME}
 
+db-create-test:
+	docker exec -it ${DB_CONTAINER} createdb --username=${DB_USER} --owner=${DB_USER} ${DB_NAME}-test
+
 db-sh:
 	docker exec -it ${DB_CONTAINER} psql -U ${DB_USER} ${DB_NAME}
 
 db-drop:
 	docker exec -it ${DB_CONTAINER} dropdb ${DB_NAME}
+
+db-drop-test:
+	docker exec -it ${DB_CONTAINER} dropdb ${DB_NAME}-test
 
 db-recreate:
 	make db-drop && make db-create
@@ -70,6 +77,9 @@ migrate-install:
 migrate-up-all:
 	migrate -database ${DB_URL} -path ./db/migrations up
 
+migrate-up-all-test:
+	migrate -database ${DB_URL_TEST} -path ./db/migrations up
+
 COUNT=$(error missing "COUNT" variable)
 # howto: make migrate-up COUNT=2
 migrate-up:
@@ -77,6 +87,9 @@ migrate-up:
 
 migrate-down-all:
 	migrate -database ${DB_URL} -path ./db/migrations down
+
+migrate-down-all-test:
+	migrate -database ${DB_URL_TEST} -path ./db/migrations down
 
 # howto: make migrate-down COUNT=2
 migrate-down:
@@ -98,3 +111,6 @@ swag-install:
 
 swag:
 	swag init
+
+e2e:
+	go test ./app/test/...
