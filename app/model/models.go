@@ -5,56 +5,57 @@
 package model
 
 import (
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type Account struct {
-	ID                   pgtype.UUID      `json:"id"`
+	ID                   uuid.UUID        `json:"id"`
 	Name                 string           `json:"name"`
 	Description          pgtype.Text      `json:"description"`
 	Balance              pgtype.Numeric   `json:"balance"`
 	FinancialInstitution pgtype.Text      `json:"financial_institution"`
 	AccountType          pgtype.Text      `json:"account_type"`
-	UserID               pgtype.UUID      `json:"user_id"`
-	WorkspaceID          pgtype.UUID      `json:"workspace_id"`
+	UserID               uuid.UUID        `json:"user_id"`
+	WorkspaceID          uuid.UUID        `json:"workspace_id"`
 	CreatedAt            pgtype.Timestamp `json:"created_at"`
 	UpdatedAt            pgtype.Timestamp `json:"updated_at"`
 	DeletedAt            pgtype.Timestamp `json:"deleted_at"`
 }
 
 type Category struct {
-	ID          pgtype.UUID      `json:"id"`
+	ID          uuid.UUID        `json:"id"`
 	Name        string           `json:"name"`
 	Description pgtype.Text      `json:"description"`
 	CType       string           `json:"c_type"`
-	UserID      pgtype.UUID      `json:"user_id"`
-	WorkspaceID pgtype.UUID      `json:"workspace_id"`
+	UserID      uuid.UUID        `json:"user_id"`
+	WorkspaceID uuid.UUID        `json:"workspace_id"`
 	CreatedAt   pgtype.Timestamp `json:"created_at"`
 	UpdatedAt   pgtype.Timestamp `json:"updated_at"`
 	DeletedAt   pgtype.Timestamp `json:"deleted_at"`
 }
 
 type Profile struct {
-	ID        pgtype.UUID      `json:"id"`
+	ID        uuid.UUID        `json:"id"`
 	Name      string           `json:"name"`
 	Currency  string           `json:"currency"`
 	Language  string           `json:"language"`
-	UserID    pgtype.UUID      `json:"user_id"`
+	UserID    uuid.UUID        `json:"user_id"`
 	CreatedAt pgtype.Timestamp `json:"created_at"`
 	UpdatedAt pgtype.Timestamp `json:"updated_at"`
 	DeletedAt pgtype.Timestamp `json:"deleted_at"`
 }
 
 type Transaction struct {
-	ID          pgtype.UUID      `json:"id"`
+	ID          uuid.UUID        `json:"id"`
 	Title       string           `json:"title"`
 	Note        pgtype.Text      `json:"note"`
 	Currency    pgtype.Text      `json:"currency"`
 	Value       pgtype.Numeric   `json:"value"`
-	UserID      pgtype.UUID      `json:"user_id"`
-	WorkspaceID pgtype.UUID      `json:"workspace_id"`
-	CategoryID  pgtype.UUID      `json:"category_id"`
-	AccountID   pgtype.UUID      `json:"account_id"`
+	UserID      uuid.UUID        `json:"user_id"`
+	WorkspaceID uuid.UUID        `json:"workspace_id"`
+	CategoryID  uuid.UUID        `json:"category_id"`
+	AccountID   uuid.UUID        `json:"account_id"`
 	HandledAt   pgtype.Timestamp `json:"handled_at"`
 	CreatedAt   pgtype.Timestamp `json:"created_at"`
 	UpdatedAt   pgtype.Timestamp `json:"updated_at"`
@@ -62,7 +63,7 @@ type Transaction struct {
 }
 
 type User struct {
-	ID        pgtype.UUID      `json:"id"`
+	ID        uuid.UUID        `json:"id"`
 	FirstName string           `json:"first_name"`
 	LastName  string           `json:"last_name"`
 	Email     string           `json:"email"`
@@ -76,12 +77,12 @@ type User struct {
 }
 
 type Workspace struct {
-	ID          pgtype.UUID      `json:"id"`
+	ID          uuid.UUID        `json:"id"`
 	Name        string           `json:"name"`
 	Description pgtype.Text      `json:"description"`
 	Currency    string           `json:"currency"`
 	Language    string           `json:"language"`
-	UserID      pgtype.UUID      `json:"user_id"`
+	UserID      uuid.UUID        `json:"user_id"`
 	CreatedAt   pgtype.Timestamp `json:"created_at"`
 	UpdatedAt   pgtype.Timestamp `json:"updated_at"`
 	DeletedAt   pgtype.Timestamp `json:"deleted_at"`

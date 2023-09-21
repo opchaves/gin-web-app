@@ -8,6 +8,7 @@ package model
 import (
 	"context"
 
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
@@ -57,7 +58,7 @@ INSERT INTO users ("id", "first_name", "last_name", "email", "password", "last_l
 `
 
 type CreateUserWithIdParams struct {
-	ID        pgtype.UUID      `json:"id"`
+	ID        uuid.UUID        `json:"id"`
 	FirstName string           `json:"first_name"`
 	LastName  string           `json:"last_name"`
 	Email     string           `json:"email"`
@@ -102,7 +103,7 @@ UPDATE users SET
 WHERE id = $1
 `
 
-func (q *Queries) DeleteUser(ctx context.Context, id pgtype.UUID) error {
+func (q *Queries) DeleteUser(ctx context.Context, id uuid.UUID) error {
 	_, err := q.db.Exec(ctx, deleteUser, id)
 	return err
 }
@@ -134,7 +135,7 @@ const getUserById = `-- name: GetUserById :one
 SELECT id, first_name, last_name, email, password, role, last_login, active, created_at, updated_at, deleted_at FROM users WHERE id = $1 LIMIT 1
 `
 
-func (q *Queries) GetUserById(ctx context.Context, id pgtype.UUID) (*User, error) {
+func (q *Queries) GetUserById(ctx context.Context, id uuid.UUID) (*User, error) {
 	row := q.db.QueryRow(ctx, getUserById, id)
 	var i User
 	err := row.Scan(
@@ -157,7 +158,7 @@ const hardDeleteUser = `-- name: HardDeleteUser :exec
 DELETE FROM users WHERE id = $1
 `
 
-func (q *Queries) HardDeleteUser(ctx context.Context, id pgtype.UUID) error {
+func (q *Queries) HardDeleteUser(ctx context.Context, id uuid.UUID) error {
 	_, err := q.db.Exec(ctx, hardDeleteUser, id)
 	return err
 }

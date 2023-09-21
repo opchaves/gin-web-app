@@ -7,6 +7,7 @@ import (
 	"log/slog"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -72,12 +73,12 @@ func NewUserService(c *UserServiceConfig) UserService {
 
 // GetById implements UserService.
 func (us *userService) GetById(ctx context.Context, id string) (*model.User, error) {
-	uuid, err := utils.ConvertToUUID(id)
+	uuid, err := uuid.Parse(id)
 	if err != nil {
 		return nil, err
 	}
 
-	return us.Q.GetUserById(ctx, *uuid)
+	return us.Q.GetUserById(ctx, uuid)
 }
 
 // Register implements UserService.
@@ -131,10 +132,10 @@ func (us *userService) Register(ctx context.Context, data *RegisterInput) (*mode
 
 	_, err = qTx.CreateWorkspace(ctx, newWorkspace)
 	if err != nil {
-		us.Logger.Error("failed to create workspace", slog.String("userId", utils.UUIDtoString(user.ID)))
+		us.Logger.Error("failed to create workspace", slog.String("userId", user.ID.String()))
 		return nil, err
 	}
-	us.Logger.Info("User workspace created", slog.String("userId", utils.UUIDtoString(user.ID)))
+	us.Logger.Info("User workspace created", slog.String("userId", user.ID.String()))
 
 	tx.Commit(ctx)
 
@@ -147,7 +148,7 @@ func (us *userService) Register(ctx context.Context, data *RegisterInput) (*mode
 func (s *userService) GetRegisterResponse(user *model.User) *RegisterResponse {
 	var r RegisterResponse
 
-	r.ID = utils.UUIDtoString(user.ID)
+	r.ID = user.ID.String()
 	r.FirstName = user.FirstName
 	r.LastName = user.LastName
 	r.Email = user.Email

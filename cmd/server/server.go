@@ -49,8 +49,8 @@ func Setup() (*Config, error) {
 	corsConfig := cors.DefaultConfig()
 	router := gin.Default()
 	router.Use(cors.New(corsConfig))
-	router.LoadHTMLGlob("app/templates/**/*")
-	router.Static("/assets", "./assets")
+	router.LoadHTMLGlob(cfg.TemplatesGlob)
+	router.Static("/assets", cfg.AssetsDir)
 
 	config := &Config{
 		Db:              db,

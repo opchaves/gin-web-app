@@ -8,6 +8,7 @@ package model
 import (
 	"context"
 
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
@@ -20,7 +21,7 @@ type CreateWorkspaceParams struct {
 	Description pgtype.Text `json:"description"`
 	Currency    string      `json:"currency"`
 	Language    string      `json:"language"`
-	UserID      pgtype.UUID `json:"user_id"`
+	UserID      uuid.UUID   `json:"user_id"`
 }
 
 func (q *Queries) CreateWorkspace(ctx context.Context, arg CreateWorkspaceParams) (*Workspace, error) {
@@ -50,7 +51,7 @@ const getUserWorkspaces = `-- name: GetUserWorkspaces :many
 SELECT id, name, description, currency, language, user_id, created_at, updated_at, deleted_at FROM workspaces WHERE user_id = $1
 `
 
-func (q *Queries) GetUserWorkspaces(ctx context.Context, userID pgtype.UUID) ([]*Workspace, error) {
+func (q *Queries) GetUserWorkspaces(ctx context.Context, userID uuid.UUID) ([]*Workspace, error) {
 	rows, err := q.db.Query(ctx, getUserWorkspaces, userID)
 	if err != nil {
 		return nil, err
@@ -84,7 +85,7 @@ const getWorkspaceByID = `-- name: GetWorkspaceByID :one
 SELECT id, name, description, currency, language, user_id, created_at, updated_at, deleted_at FROM workspaces WHERE id = $1
 `
 
-func (q *Queries) GetWorkspaceByID(ctx context.Context, id pgtype.UUID) (*Workspace, error) {
+func (q *Queries) GetWorkspaceByID(ctx context.Context, id uuid.UUID) (*Workspace, error) {
 	row := q.db.QueryRow(ctx, getWorkspaceByID, id)
 	var i Workspace
 	err := row.Scan(
@@ -106,7 +107,7 @@ UPDATE workspaces SET "name" = $2, "description" = $3, "currency" = $4, "languag
 `
 
 type UpdateWorkspaceParams struct {
-	ID          pgtype.UUID `json:"id"`
+	ID          uuid.UUID   `json:"id"`
 	Name        string      `json:"name"`
 	Description pgtype.Text `json:"description"`
 	Currency    string      `json:"currency"`
