@@ -30,13 +30,7 @@ type workspaceService struct {
 	Db     *pgxpool.Pool
 }
 
-type WorkspaceServiceConfig struct {
-	Q      *model.Queries
-	Logger *slog.Logger
-	Db     *pgxpool.Pool
-}
-
-func NewWorkspaceService(c *UserServiceConfig) WorkspaceService {
+func NewWorkspaceService(c *ServiceConfig) WorkspaceService {
 	return &workspaceService{
 		Q:      c.Q,
 		Logger: c.Logger,

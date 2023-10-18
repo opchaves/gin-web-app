@@ -1,4 +1,4 @@
-package server
+package handler
 
 import (
 	"errors"
@@ -12,6 +12,7 @@ import (
 	"github.com/opchaves/gin-web-app/app/model"
 	"github.com/opchaves/gin-web-app/app/model/apperrors"
 	"github.com/opchaves/gin-web-app/app/service"
+	"github.com/opchaves/gin-web-app/app/utils"
 )
 
 func (h *Handler) Register(c *gin.Context) {
@@ -38,7 +39,7 @@ func (h *Handler) Register(c *gin.Context) {
 
 	if err != nil {
 		if err.Error() == apperrors.NewBadRequest(apperrors.DuplicateEmail).Error() {
-			toFieldErrorResponse(c, "Email", apperrors.DuplicateEmail)
+			utils.ToFieldErrorResponse(c, "Email", apperrors.DuplicateEmail)
 			return
 		}
 

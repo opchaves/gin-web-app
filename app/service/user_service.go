@@ -57,13 +57,7 @@ type userService struct {
 	Db     *pgxpool.Pool
 }
 
-type UserServiceConfig struct {
-	Q      *model.Queries
-	Logger *slog.Logger
-	Db     *pgxpool.Pool
-}
-
-func NewUserService(c *UserServiceConfig) UserService {
+func NewUserService(c *ServiceConfig) UserService {
 	return &userService{
 		Q:      c.Q,
 		Logger: c.Logger,

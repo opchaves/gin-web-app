@@ -10,11 +10,11 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/opchaves/gin-web-app/cmd/server"
+	"github.com/opchaves/gin-web-app/app"
 )
 
 func main() {
-	config, err := server.Setup()
+	config, err := app.Setup()
 
 	if err != nil {
 		slog.Error("error: ", slog.AnyValue(err))

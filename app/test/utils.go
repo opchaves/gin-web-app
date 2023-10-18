@@ -5,8 +5,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
+	"github.com/opchaves/gin-web-app/app"
 	"github.com/opchaves/gin-web-app/app/model"
-	"github.com/opchaves/gin-web-app/cmd/server"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -15,7 +15,7 @@ func SetupTest(t *testing.T) *gin.Engine {
 
 	_ = godotenv.Load("../../.env.test")
 
-	srv, err := server.Setup()
+	srv, err := app.Setup()
 	assert.NoError(t, err)
 
 	cleanUpDatabase(t, srv)
@@ -23,7 +23,7 @@ func SetupTest(t *testing.T) *gin.Engine {
 	return srv.Router
 }
 
-func cleanUpDatabase(t *testing.T, config *server.Config) {
+func cleanUpDatabase(t *testing.T, config *app.Config) {
 	queries := model.New(config.Db)
 
 	err := queries.DeleteWorkspaces(config.Ctx)
