@@ -5,6 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/opchaves/gin-web-app/app/handler"
+	"github.com/opchaves/gin-web-app/app/handler/middleware"
 	"github.com/opchaves/gin-web-app/app/model"
 	"github.com/opchaves/gin-web-app/app/service"
 )
@@ -36,4 +37,8 @@ func SetRoutes(c *Config) {
 
 	authGroup := c.Router.Group("/auth")
 	authGroup.POST("/register", h.Register)
+	authGroup.POST("/login", h.Login)
+
+	authGroup.Use(middleware.AuthUser(c.Logger))
+	authGroup.GET("/me", h.GetCurrent)
 }

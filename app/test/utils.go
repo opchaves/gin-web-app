@@ -23,6 +23,7 @@ func SetupTest(t *testing.T) *gin.Engine {
 	return srv.Router
 }
 
+// TODO truncate tabless?? reset sequences?? run migrations before tests??
 func cleanUpDatabase(t *testing.T, config *app.Config) {
 	queries := model.New(config.Db)
 

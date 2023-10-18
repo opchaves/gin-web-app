@@ -49,6 +49,8 @@ func parseFieldError(e validator.FieldError) string {
 	switch tag {
 	case "required_without":
 		return fmt.Sprintf("%s is required if %s is not supplied", fieldPrefix, e.Param())
+	case "required":
+		return fmt.Sprintf("cannot be empty")
 	case "email":
 		return fmt.Sprintf("email is not valid")
 	case "min":

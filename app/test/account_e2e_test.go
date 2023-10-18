@@ -21,6 +21,7 @@ func TestMain_AccountE2E(t *testing.T) {
 	router := SetupTest(t)
 
 	authUser := fixture.GetMockUser()
+	cookie := ""
 
 	testCases := []struct {
 		name          string
@@ -48,6 +49,65 @@ func TestMain_AccountE2E(t *testing.T) {
 			},
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
 				assert.Equal(t, http.StatusCreated, recorder.Code)
+
+				respBody := &apiResponse{}
+				err := json.Unmarshal(recorder.Body.Bytes(), respBody)
+				assert.NoError(t, err)
+
+				assert.Equal(t, authUser.FirstName, respBody.Data.FirstName)
+				assert.Equal(t, authUser.LastName, respBody.Data.LastName)
+				assert.Equal(t, authUser.Email, respBody.Data.Email)
+				assert.NotNil(t, respBody.Data.ID)
+				assert.NotNil(t, respBody.Data.CreatedAt)
+				assert.NotNil(t, respBody.Data.UpdatedAt)
+			},
+		},
+		{
+			name: "Login Account",
+			setupRequest: func() (*http.Request, error) {
+				data := gin.H{
+					"password": authUser.Password,
+					"email":    authUser.Email,
+				}
+
+				reqBody, err := json.Marshal(data)
+				assert.NoError(t, err)
+
+				return http.NewRequest(http.MethodPost, "/auth/login", bytes.NewBuffer(reqBody))
+			},
+			setupHeaders: func(t *testing.T, request *http.Request) {
+				request.Header.Set("Content-Type", "application/json")
+			},
+			checkResponse: func(recorder *httptest.ResponseRecorder) {
+				assert.Equal(t, http.StatusOK, recorder.Code)
+
+				respBody := &apiResponse{}
+				err := json.Unmarshal(recorder.Body.Bytes(), respBody)
+				assert.NoError(t, err)
+
+				assert.Equal(t, authUser.FirstName, respBody.Data.FirstName)
+				assert.Equal(t, authUser.LastName, respBody.Data.LastName)
+				assert.Equal(t, authUser.Email, respBody.Data.Email)
+				assert.NotNil(t, respBody.Data.ID)
+				assert.NotNil(t, respBody.Data.CreatedAt)
+				assert.NotNil(t, respBody.Data.UpdatedAt)
+
+				assert.Contains(t, recorder.Header(), "Set-Cookie")
+
+				cookie = recorder.Header().Get("Set-Cookie")
+			},
+		},
+		{
+			name: "Get Account",
+			setupRequest: func() (*http.Request, error) {
+				return http.NewRequest(http.MethodGet, "/auth/me", nil)
+			},
+			setupHeaders: func(t *testing.T, request *http.Request) {
+				request.Header.Set("Content-Type", "application/json")
+				request.Header.Add("Cookie", cookie)
+			},
+			checkResponse: func(recorder *httptest.ResponseRecorder) {
+				assert.Equal(t, http.StatusOK, recorder.Code)
 
 				respBody := &apiResponse{}
 				err := json.Unmarshal(recorder.Body.Bytes(), respBody)

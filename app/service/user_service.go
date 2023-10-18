@@ -37,7 +37,12 @@ type RegisterInput struct {
 	LastName string `json:"last_name" binding:"required,min=2,max=30"`
 	// Min 10, max 100 characters.
 	Password string `json:"password" binding:"required,min=10,max=100"`
-} //@name RegisterResponse
+} //@name RegisterRequest
+
+type LoginInput struct {
+	Email    string `json:"email" binding:"required,email"`
+	Password string `json:"password" binding:"required"`
+} //@name LoginInput
 
 type RegisterResponse struct {
 	*model.User
@@ -47,8 +52,9 @@ type RegisterResponse struct {
 } //@name RegisterResponse
 
 type UserService interface {
-	GetById(ctx context.Context, id string) (*model.User, error)
+	GetById(ctx context.Context, id string) (*RegisterResponse, error)
 	Register(ctx context.Context, user *RegisterInput) (*RegisterResponse, error)
+	Login(ctx context.Context, input *LoginInput) (*RegisterResponse, error)
 }
 
 type userService struct {
@@ -66,13 +72,19 @@ func NewUserService(c *ServiceConfig) UserService {
 }
 
 // GetById implements UserService.
-func (us *userService) GetById(ctx context.Context, id string) (*model.User, error) {
+func (us *userService) GetById(ctx context.Context, id string) (*RegisterResponse, error) {
 	uuid, err := uuid.Parse(id)
 	if err != nil {
 		return nil, err
 	}
 
-	return us.Q.GetUserById(ctx, uuid)
+	user, err := us.Q.GetUserById(ctx, uuid)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &RegisterResponse{User: user}, err
 }
 
 // Register implements UserService.
@@ -136,6 +148,27 @@ func (us *userService) Register(ctx context.Context, data *RegisterInput) (*Regi
 	return &RegisterResponse{User: user}, err
 	// TODO future: send email to verify account.
 	// TODO when user verifies account, then create workspace, default accounts and categories
+}
+
+func (us *userService) Login(ctx context.Context, input *LoginInput) (*RegisterResponse, error) {
+	user, err := us.Q.GetUserByEmail(ctx, input.Email)
+
+	// Will return NotAuthorized to client to omit details of why
+	if err != nil {
+		return nil, apperrors.NewAuthorization(apperrors.InvalidCredentials)
+	}
+
+	match, err := utils.ComparePasswords(user.Password, input.Password)
+
+	if err != nil {
+		return nil, apperrors.NewInternal()
+	}
+
+	if !match {
+		return nil, apperrors.NewAuthorization(apperrors.InvalidCredentials)
+	}
+
+	return &RegisterResponse{User: user}, err
 }
 
 // isDuplicateKeyError checks if the provided error is a PostgreSQL duplicate key error
