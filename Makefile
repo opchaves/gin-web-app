@@ -12,7 +12,7 @@ DB_NAME := kom-db
 DB_VOL := kom-data
 DB_URL=postgresql://root:secret@localhost:5432/kom-db?sslmode=disable
 DB_URL_TEST=postgresql://root:secret@localhost:5432/kom-db-test?sslmode=disable
-REDIS_PORT := 6380
+REDIS_PORT := 6379
 REDIS_VOL := kom-redis-data
 
 postgres:

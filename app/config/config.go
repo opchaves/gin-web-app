@@ -10,6 +10,7 @@ import (
 
 type Config struct {
 	DatabaseUrl    string `env:"DATABASE_URL,required"`
+	RedisUrl       string `env:"REDIS_URL,required"`
 	Port           string `env:"PORT,default=8080"`
 	CorsOrigin     string `env:"CORS_ORIGIN,default=*"`
 	HandlerTimeOut int64  `env:"HANDLER_TIMEOUT,default=5"`
@@ -17,6 +18,8 @@ type Config struct {
 	RootPath       string `env:"ROOT_PATH,default=src/github.com/opchaves/gin-web-app"`
 	TemplatesGlob  string `env:"TEMPLATES_GLOB,default=app/templates/**/*"`
 	AssetsDir      string `env:"ASSETS_DIR,default=assets"`
+	SessionSecret  string `env:"SESSION_SECRET,required"`
+	Domain         string `env:"DOMAIN"`
 }
 
 func LoadConfig(ctx context.Context) (config Config, err error) {
