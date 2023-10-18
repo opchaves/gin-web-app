@@ -115,7 +115,7 @@ func Setup() (*Config, error) {
 	// add rate limit
 	rate := limiter.Rate{
 		Period: 1 * time.Hour,
-		Limit:  1500,
+		Limit:  cfg.RateLimit,
 	}
 
 	limitStore, _ := sredis.NewStore(rdb)
