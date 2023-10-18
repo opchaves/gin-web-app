@@ -29,6 +29,7 @@ func (h *Handler) Register(c *gin.Context) {
 		c.JSON(apperrors.Status(err), gin.H{"error": err.Error()})
 	}
 
+	h.setUserSession(c, user.ID.String())
+
 	c.JSON(http.StatusCreated, gin.H{"data": user})
-	return
 }
