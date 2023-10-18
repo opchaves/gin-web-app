@@ -29,26 +29,26 @@ import (
 // }
 
 type RegisterInput struct {
-	FirstName string `json:"first_name" binding:"required,min=2"`
-	LastName  string `json:"last_name" binding:"required,min=2"`
-	Email     string `json:"email" binding:"required,email"`
-	Password  string `json:"password" binding:"required,min=10,max=50"`
-}
+	// Must be unique
+	Email string `json:"email" binding:"required,email"`
+	// Min 2, max 30 characters.
+	FirstName string `json:"first_name" binding:"required,min=2,max=30"`
+	// Min 2, max 30 characters.
+	LastName string `json:"last_name" binding:"required,min=2,max=30"`
+	// Min 10, max 100 characters.
+	Password string `json:"password" binding:"required,min=10,max=100"`
+} //@name RegisterResponse
 
 type RegisterResponse struct {
-	ID        string    `json:"id"`
-	FirstName string    `json:"first_name"`
-	LastName  string    `json:"last_name"`
-	Email     string    `json:"email"`
-	Role      string    `json:"role"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
-}
+	*model.User
+	Password  bool `json:"password,omitempty"`
+	LastLogin bool `json:"last_login,omitempty"`
+	DeletedAt bool `json:"deleted_at,omitempty"`
+} //@name RegisterResponse
 
 type UserService interface {
 	GetById(ctx context.Context, id string) (*model.User, error)
-	Register(ctx context.Context, user *RegisterInput) (*model.User, error)
-	GetRegisterResponse(user *model.User) *RegisterResponse
+	Register(ctx context.Context, user *RegisterInput) (*RegisterResponse, error)
 }
 
 type userService struct {
@@ -76,7 +76,7 @@ func (us *userService) GetById(ctx context.Context, id string) (*model.User, err
 }
 
 // Register implements UserService.
-func (us *userService) Register(ctx context.Context, data *RegisterInput) (*model.User, error) {
+func (us *userService) Register(ctx context.Context, data *RegisterInput) (*RegisterResponse, error) {
 	hashedPassword, err := utils.HashPassword(data.Password)
 
 	if err != nil {
@@ -133,24 +133,9 @@ func (us *userService) Register(ctx context.Context, data *RegisterInput) (*mode
 
 	tx.Commit(ctx)
 
-	return user, err
+	return &RegisterResponse{User: user}, err
 	// TODO future: send email to verify account.
 	// TODO when user verifies account, then create workspace, default accounts and categories
-}
-
-// GetRegisterResponse implements UserService.
-func (s *userService) GetRegisterResponse(user *model.User) *RegisterResponse {
-	var r RegisterResponse
-
-	r.ID = user.ID.String()
-	r.FirstName = user.FirstName
-	r.LastName = user.LastName
-	r.Email = user.Email
-	r.Role = user.Role
-	r.CreatedAt = user.CreatedAt.Time
-	r.UpdatedAt = user.UpdatedAt.Time
-
-	return &r
 }
 
 // isDuplicateKeyError checks if the provided error is a PostgreSQL duplicate key error

@@ -8,15 +8,13 @@ import (
 	"testing"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 	"github.com/opchaves/gin-web-app/app/model/fixture"
 	"github.com/opchaves/gin-web-app/app/service"
 	"github.com/stretchr/testify/assert"
 )
 
-type ApiResponse struct {
+type apiResponse struct {
 	Data service.RegisterResponse `json:"data"`
-	Code int                      `json:"code"`
 }
 
 func TestMain_AccountE2E(t *testing.T) {
@@ -51,7 +49,7 @@ func TestMain_AccountE2E(t *testing.T) {
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
 				assert.Equal(t, http.StatusCreated, recorder.Code)
 
-				respBody := &ApiResponse{}
+				respBody := &apiResponse{}
 				err := json.Unmarshal(recorder.Body.Bytes(), respBody)
 				assert.NoError(t, err)
 
@@ -61,8 +59,6 @@ func TestMain_AccountE2E(t *testing.T) {
 				assert.NotNil(t, respBody.Data.ID)
 				assert.NotNil(t, respBody.Data.CreatedAt)
 				assert.NotNil(t, respBody.Data.UpdatedAt)
-
-				authUser.ID = uuid.MustParse(respBody.Data.ID)
 			},
 		},
 	}
