@@ -4,11 +4,14 @@ import (
 	"log/slog"
 	"net/http"
 
+	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/opchaves/gin-web-app/app/model/apperrors"
 	"github.com/opchaves/gin-web-app/app/service"
 	"github.com/opchaves/gin-web-app/app/utils"
 )
+
+// TODO login view, form, handler, use htmx
 
 func (h *Handler) Register(c *gin.Context) {
 	var req service.RegisterInput
@@ -54,6 +57,22 @@ func (h *Handler) Login(c *gin.Context) {
 	h.setUserSession(c, user.ID.String())
 
 	c.JSON(http.StatusOK, gin.H{"data": user})
+}
+
+func (h *Handler) Logout(c *gin.Context) {
+	c.Set("user", nil)
+
+	session := sessions.Default(c)
+	session.Set("userId", "")
+	session.Clear()
+	session.Options(sessions.Options{Path: "/", MaxAge: -1})
+	err := session.Save()
+
+	if err != nil {
+		h.Logger.Warn("error clearing sessions", slog.AnyValue(err))
+	}
+
+	c.JSON(http.StatusOK, true)
 }
 
 func (h *Handler) GetCurrent(c *gin.Context) {

@@ -38,6 +38,7 @@ func SetRoutes(c *Config) {
 	authGroup := c.Router.Group("/auth")
 	authGroup.POST("/register", h.Register)
 	authGroup.POST("/login", h.Login)
+	authGroup.POST("/logout", h.Logout)
 
 	authGroup.Use(middleware.AuthUser(c.Logger))
 	authGroup.GET("/me", h.GetCurrent)

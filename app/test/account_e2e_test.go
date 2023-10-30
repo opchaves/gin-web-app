@@ -121,6 +121,19 @@ func TestMain_AccountE2E(t *testing.T) {
 				assert.NotNil(t, respBody.Data.UpdatedAt)
 			},
 		},
+		{
+			name: "Logout",
+			setupRequest: func() (*http.Request, error) {
+				return http.NewRequest(http.MethodPost, "/auth/logout", nil)
+			},
+			setupHeaders: func(t *testing.T, request *http.Request) {
+				request.Header.Set("Content-Type", "application/json")
+				request.Header.Add("Cookie", cookie)
+			},
+			checkResponse: func(recorder *httptest.ResponseRecorder) {
+				assert.Equal(t, http.StatusOK, recorder.Code)
+			},
+		},
 	}
 
 	for i := range testCases {
