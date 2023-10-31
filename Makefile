@@ -21,9 +21,13 @@ postgres:
 redis:
 	docker run --rm -d --name kom-redis -v ${REDIS_VOL}:/data -p ${REDIS_PORT}:6379 redis:7.2-alpine redis-server --save 60 1
 
+mail:
+	docker run --rm -d --name kom-mail -v kom-mail-data:/mail-data -p 1025:1025 -p 8025:8025 mailhog/mailhog
+
 data-volume:
 	docker volume create ${DB_VOL}
 	docker volume create ${REDIS_VOL}
+	docker volume create kom-mail-data
 
 db-create:
 	docker exec -it ${DB_CONTAINER} createdb --username=${DB_USER} --owner=${DB_USER} ${DB_NAME}
