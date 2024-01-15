@@ -21,6 +21,13 @@ type Config struct {
 	AssetsDir      string `env:"ASSETS_DIR,default=assets"`
 	SessionSecret  string `env:"SESSION_SECRET,default=sup3rs3cr37"`
 	RateLimit      int64  `env:"RATE_LIMIT,default=1000"`
+
+	MailMailer     string `env:"MAIL_MAILER,default=smtp"`
+	MailHost       string `env:"MAIL_HOST,default=localhost"`
+	MailPort       string `env:"MAIL_PORT,default=1025"`
+	MailUsername   string `env:"MAIL_USERNAME"`
+	MailPassword   string `env:"MAIL_PASSWORD"`
+	MailEncryption string `env:"MAIL_ENCRYPTION"`
 }
 
 func LoadConfig(ctx context.Context) (config Config, err error) {

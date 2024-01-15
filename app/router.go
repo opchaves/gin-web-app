@@ -12,10 +12,25 @@ import (
 
 func SetRoutes(c *Config) {
 	queries := model.New(c.Db)
-	userService := service.NewUserService(&service.ServiceConfig{
+	redisService := service.NewRedisService(&service.RDConfig{
 		Db:     c.Db,
-		Q:      queries,
 		Logger: c.Logger,
+		Redis:  c.RedisClient,
+	})
+	mailService := service.NewMailService(&service.MailConfig{
+		Username:   c.Cfg.MailUsername,
+		Password:   c.Cfg.MailPassword,
+		Origin:     c.Cfg.MailHost,
+		Port:       c.Cfg.MailPort,
+		Encryption: c.Cfg.MailEncryption,
+		Logger:     c.Logger,
+	})
+	userService := service.NewUserService(&service.USConfig{
+		Db:           c.Db,
+		Q:            queries,
+		Logger:       c.Logger,
+		RedisService: redisService,
+		MailService:  mailService,
 	})
 
 	h := &handler.Handler{
@@ -24,6 +39,8 @@ func SetRoutes(c *Config) {
 		Cfg:          c.Cfg,
 		MaxBodyBytes: c.MaxBodyBytes,
 		UserService:  userService,
+		RedisService: redisService,
+		MailService:  mailService,
 	}
 
 	c.Router.NoRoute(func(c *gin.Context) {
@@ -39,6 +56,7 @@ func SetRoutes(c *Config) {
 	authGroup.POST("/register", h.Register)
 	authGroup.POST("/login", h.Login)
 	authGroup.POST("/logout", h.Logout)
+	authGroup.POST("/forgot-password", h.ForgotPassword)
 
 	authGroup.Use(middleware.AuthUser(c.Logger))
 	authGroup.GET("/me", h.GetCurrent)

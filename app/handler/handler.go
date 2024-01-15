@@ -17,6 +17,8 @@ type Handler struct {
 	Cfg          *config.Config
 	MaxBodyBytes int64
 	UserService  service.UserService
+	RedisService service.RedisService
+	MailService  service.MailService
 }
 
 // setUserSession saves the users ID in the session

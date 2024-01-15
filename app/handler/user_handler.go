@@ -89,3 +89,41 @@ func (h *Handler) GetCurrent(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"data": user})
 }
+
+func (h *Handler) ForgotPassword(c *gin.Context) {
+	var req service.ForgotPasswordInput
+
+	if err := c.ShouldBind(&req); err != nil {
+		errors := parseError(err)
+		c.JSON(http.StatusBadRequest, gin.H{"errors": errors})
+		return
+	}
+
+	user, err := h.UserService.GetByEmail(c, req.Email)
+
+	if err != nil {
+		// No user with the email found
+		if err.Error() == apperrors.NewNotFound("email", req.Email).Error() {
+			c.JSON(http.StatusOK, true)
+			return
+		}
+
+		e := apperrors.NewInternal()
+		c.JSON(e.Status(), gin.H{"error": e})
+		return
+	}
+
+	ctx := c.Request.Context()
+	err = h.UserService.ForgotPassword(ctx, user)
+
+	if err != nil {
+		h.Logger.Warn("error sending reset password email", slog.AnyValue(err))
+		e := apperrors.NewInternal()
+		c.JSON(e.Status(), gin.H{
+			"error": e,
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, true)
+}

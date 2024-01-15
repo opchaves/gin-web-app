@@ -16,18 +16,6 @@ import (
 	"github.com/opchaves/gin-web-app/app/utils"
 )
 
-// type UserService interface {
-// 	Get(ctx context.Context, id int32) (*User, error)
-// 	GetByEmail(ctx context.Context, email string) (*User, error)
-// 	Register(ctx context.Context, input *InsertUserParams) (*User, error)
-// 	Login(ctx context.Context, email, password string) (*User, error)
-// 	UpdateAccount(ctx context.Context, user *User) error
-// 	IsEmailAlreadyInUse(ctx context.Context, email string) bool
-// 	ChangePassword(ctx context.Context, currentPassword, newPassword string, user *User) error
-// 	ForgotPassword(ctx context.Context, user *User) error
-// 	ResetPassword(ctx context.Context, password string, token string) (*User, error)
-// }
-
 type RegisterInput struct {
 	// Must be unique
 	Email string `json:"email" binding:"required,email"`
@@ -44,6 +32,7 @@ type LoginInput struct {
 	Password string `json:"password" binding:"required"`
 } //@name LoginInput
 
+// TODO rename struct. maybe `UserResponse`
 type RegisterResponse struct {
 	*model.User
 	Password  bool `json:"password,omitempty"`
@@ -51,23 +40,41 @@ type RegisterResponse struct {
 	DeletedAt bool `json:"deleted_at,omitempty"`
 } //@name RegisterResponse
 
+type ForgotPasswordInput struct {
+	Email string `json:"email" binding:"required,email"`
+} //@name ForgotPasswordInput
+
 type UserService interface {
 	GetById(ctx context.Context, id string) (*RegisterResponse, error)
+	GetByEmail(ctx context.Context, email string) (*model.User, error)
 	Register(ctx context.Context, user *RegisterInput) (*RegisterResponse, error)
 	Login(ctx context.Context, input *LoginInput) (*RegisterResponse, error)
+	ForgotPassword(ctx context.Context, user *model.User) error
 }
 
 type userService struct {
-	Q      *model.Queries
-	Logger *slog.Logger
-	Db     *pgxpool.Pool
+	Q            *model.Queries
+	Logger       *slog.Logger
+	Db           *pgxpool.Pool
+	RedisService RedisService
+	MailService  MailService
 }
 
-func NewUserService(c *ServiceConfig) UserService {
+type USConfig struct {
+	Q            *model.Queries
+	Logger       *slog.Logger
+	Db           *pgxpool.Pool
+	RedisService RedisService
+	MailService  MailService
+}
+
+func NewUserService(c *USConfig) UserService {
 	return &userService{
-		Q:      c.Q,
-		Logger: c.Logger,
-		Db:     c.Db,
+		Q:            c.Q,
+		Logger:       c.Logger,
+		Db:           c.Db,
+		RedisService: c.RedisService,
+		MailService:  c.MailService,
 	}
 }
 
@@ -85,6 +92,17 @@ func (us *userService) GetById(ctx context.Context, id string) (*RegisterRespons
 	}
 
 	return &RegisterResponse{User: user}, err
+}
+
+// GetByEmail implements UserService.
+func (us *userService) GetByEmail(ctx context.Context, email string) (*model.User, error) {
+	user, err := us.Q.GetUserByEmail(ctx, email)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return user, err
 }
 
 // Register implements UserService.
@@ -178,4 +196,16 @@ func isDuplicateKeyError(err error) bool {
 		return pgErr.Code == "23505"
 	}
 	return false
+}
+
+// ForgotPassword implements UserService.
+func (s *userService) ForgotPassword(ctx context.Context, user *model.User) error {
+	token, err := s.RedisService.SetResetToken(ctx, user.ID.String())
+
+	if err != nil {
+		return err
+	}
+
+	// TODO send email async? is this already enough? or run send to bg job?
+	return s.MailService.SendResetEmail(user.Email, token)
 }
